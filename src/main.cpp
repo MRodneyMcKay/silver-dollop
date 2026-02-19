@@ -1,46 +1,39 @@
 #include <Arduino.h>
 #include <OneWire.h>
+#include <DallasTemperature.h>
+#include "sensors.h"
 
-// Pin where the DS18B20 data line is connected
+// Pin where DS18B20 data line is connected
 #define ONE_WIRE_BUS 4
 
 OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensorsDevice(&oneWire);
 
 void setup() {
     Serial.begin(9600);
-    while (!Serial); // wait for serial monitor
-    Serial.println("1-Wire Bus Scan Starting...");
+    while (!Serial);
+    Serial.println("Single sensor temperature test");
+
+    // Initialize the DallasTemperature library
+    sensorsDevice.begin();
 }
 
 void loop() {
-    byte address[8];
-    int deviceCount = 0;
+    sensorsDevice.requestTemperatures(); // ask sensor to measure
 
-    Serial.println("Scanning 1-Wire bus...");
-
-    oneWire.reset_search(); // start new search
-    while (oneWire.search(address)) {
-        deviceCount++;
-        Serial.print("Device ");
-        Serial.print(deviceCount);
-        Serial.print(": ");
-        for (int i = 0; i < 8; i++) {
-            if (address[i] < 16) Serial.print("0"); // leading zero
-            Serial.print(address[i], HEX);
-        }
-
-        // Check CRC
-        if (OneWire::crc8(address, 7) != address[7]) {
-            Serial.println("  CRC INVALID");
+    for (uint8_t i = 0; i < SENSOR_COUNT; i++) {
+        float tempC = sensorsDevice.getTempC(sensors[i].address);
+        if (tempC == DEVICE_DISCONNECTED_C) {
+            Serial.print(sensors[i].label);
+            Serial.println(": Sensor disconnected!");
         } else {
-            Serial.println("  CRC OK");
+            Serial.print(sensors[i].label);
+            Serial.print(": ");
+            Serial.print(tempC);
+            Serial.println(" °C");
         }
     }
 
-    if (deviceCount == 0) {
-        Serial.println("No devices found.");
-    }
-
-    Serial.println("Scan complete.");
-    delay(5000); // scan every 5 seconds
+    Serial.println("----------------------");
+    delay(2000); // read every 2 seconds
 }

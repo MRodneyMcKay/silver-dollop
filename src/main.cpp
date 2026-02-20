@@ -1,39 +1,39 @@
 #include <Arduino.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include "sensors.h"
+#include "Sensor.h"
 
-// Pin where DS18B20 data line is connected
 #define ONE_WIRE_BUS 4
 
 OneWire oneWire(ONE_WIRE_BUS);
-DallasTemperature sensorsDevice(&oneWire);
+DallasTemperature bus(&oneWire);
+
+// Static sensor array
+Sensor sensors[] = {
+    Sensor("Sensor 01", (uint8_t[]){0x28,0xC5,0x8F,0x55,0x05,0x00,0x00,0xA2}),
+    Sensor("Sensor 02", (uint8_t[]){0x28,0x45,0x39,0x56,0x05,0x00,0x00,0x13}),
+    Sensor("Sensor 03", (uint8_t[]){0x28,0xE2,0x74,0x55,0x05,0x00,0x00,0x47}),
+    Sensor("Sensor 04", (uint8_t[]){0x28,0xBE,0xBA,0x55,0x05,0x00,0x00,0x94})
+};
+
+constexpr size_t SENSOR_COUNT = sizeof(sensors)/sizeof(Sensor);
 
 void setup() {
     Serial.begin(9600);
-    while (!Serial);
-    Serial.println("Single sensor temperature test");
-
-    // Initialize the DallasTemperature library
-    sensorsDevice.begin();
+    bus.begin();
 }
 
 void loop() {
-    sensorsDevice.requestTemperatures(); // ask sensor to measure
+    bus.requestTemperatures();
 
-    for (uint8_t i = 0; i < SENSOR_COUNT; i++) {
-        float tempC = sensorsDevice.getTempC(sensors[i].address);
-        if (tempC == DEVICE_DISCONNECTED_C) {
-            Serial.print(sensors[i].label);
-            Serial.println(": Sensor disconnected!");
-        } else {
-            Serial.print(sensors[i].label);
-            Serial.print(": ");
-            Serial.print(tempC);
-            Serial.println(" °C");
-        }
+    // Measure all sensors
+    for (size_t i = 0; i < SENSOR_COUNT; ++i) {
+        sensors[i].measure(bus);
     }
 
-    Serial.println("----------------------");
-    delay(2000); // read every 2 seconds
+    // Print all sensors using static member function
+    Sensor::printAll(sensors, SENSOR_COUNT, Serial);
+
+    Serial.println("---------------------------");
+    delay(2000);
 }

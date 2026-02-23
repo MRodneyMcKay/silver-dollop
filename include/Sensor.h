@@ -67,10 +67,11 @@ private:
     const char* _label;
     uint8_t _address[8];
 
-    float _current{0.0f};
-    float _max{-1000.0f};
-    float _ema{0.0f};
-    uint32_t _samples{0};
+    void initializeState();
+    float _current;
+    float _max;
+    float _ema;
+    uint32_t _samples;
 
     // Delete copy/move to avoid accidental copies
     Sensor(const Sensor&) = delete;

@@ -6,6 +6,14 @@ Sensor::Sensor(const char* label, const uint8_t address[8])
     : _label(label)
 {
     memcpy(_address, address, 8);
+    initializeState();
+}
+
+void Sensor::initializeState() {
+    _current = DEVICE_DISCONNECTED_C;
+    _max = DEVICE_DISCONNECTED_C;
+    _ema = DEVICE_DISCONNECTED_C;
+    _samples = 0;
 }
 
 // Measure temperature and update EMA
@@ -14,7 +22,8 @@ float Sensor::measure(DallasTemperature& bus, float alpha)
     float temp = bus.getTempC(_address);
 
     if (temp == DEVICE_DISCONNECTED_C) {
-        return temp;
+        initializeState();
+        return DEVICE_DISCONNECTED_C;
     }
 
     _current = temp;
@@ -36,10 +45,14 @@ void Sensor::printTo(Print& out) const
 {
     out.print(_label);
     out.print(": ");
-    out.print(_current, 2);
-    out.print(" °C | EMA avg: ");
-    out.print(_ema, 2);
-    out.print(" °C | max: ");
-    out.print(_max, 2);
-    out.print(" °C");
+    if (_current == DEVICE_DISCONNECTED_C) {
+        out.print("[DISCONNECTED]");
+    } else {
+        out.print(_current, 2);
+        out.print(" °C | EMA avg: ");
+        out.print(_ema, 2);
+        out.print(" °C | max: ");
+        out.print(_max, 2);
+        out.print(" °C");
+    }  
 }

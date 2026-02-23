@@ -16,23 +16,15 @@ Sensor sensors[] = {
     Sensor("Sensor 04", (uint8_t[]){0x28,0xBE,0xBA,0x55,0x05,0x00,0x00,0x94})
 };
 
-constexpr size_t SENSOR_COUNT = sizeof(sensors)/sizeof(Sensor);
-
 void setup() {
     Serial.begin(9600);
     bus.begin();
 }
 
 void loop() {
-    bus.requestTemperatures();
-
-    // Measure all sensors
-    for (size_t i = 0; i < SENSOR_COUNT; ++i) {
-        sensors[i].measure(bus);
-    }
-
     // Print all sensors using static member function
-    Sensor::printAll(sensors, SENSOR_COUNT, Serial);
+    Sensor::measureAll(sensors, bus); 
+    Sensor::printAll(sensors, Serial);
 
     Serial.println("---------------------------");
     delay(2000);

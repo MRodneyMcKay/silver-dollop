@@ -19,13 +19,11 @@ Sensor sensors[] = {
 void setup() {
     Serial.begin(9600);
     bus.begin();
+    Sensor::printCSVHeader(sensors, Serial);
 }
 
 void loop() {
-    // Print all sensors using static member function
     Sensor::measureAll(sensors, bus); 
-    Sensor::printAll(sensors, Serial);
-
-    Serial.println("---------------------------");
+    Sensor::printCSVRow(sensors, Serial);
     delay(2000);
 }

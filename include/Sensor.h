@@ -18,6 +18,34 @@ public:
     // Print the sensor to a Print stream
     void printTo(Print& out) const;
 
+    // Prints: Uptime;Label1;Label2;...
+    template <size_t N>
+    static void printCSVHeader(Sensor (&sensors)[N], Print& out) {
+        out.print(F("Uptime"));
+        for (auto& s : sensors) {
+            out.print(F(";"));
+            out.print(s._label);
+        }
+        out.println(F(";"));
+    }
+
+    // Prints: csv
+    template <size_t N>
+    static void printCSVRow(Sensor (&sensors)[N], Print& out) {
+        printUptime(out);
+        for (auto& s : sensors) {
+            out.print(F(";"));
+            if (s._current == DEVICE_DISCONNECTED_C) {
+                out.print(F("")); 
+            } else {
+                out.print(s._current, 2); // 1 decimal place as per your example
+            }
+        }
+        out.println(F(";"));
+    }
+
+    static void printUptime(Print& out);
+
     // Static member function to print all sensors in an array
     template <size_t N> 
     static void printAll(Sensor (&sensors)[N], Print& out) { 

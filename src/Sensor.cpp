@@ -56,3 +56,19 @@ void Sensor::printTo(Print& out) const
         out.print(" °C");
     }  
 }
+
+void Sensor::printUptime(Print& out) {
+    uint32_t sec = millis() / 1000;
+    int h = sec / 3600;
+    int m = (sec % 3600) / 60;
+    int s = sec % 60;
+
+    if (h < 10) out.print('0');
+    out.print(h);
+    out.print(':');
+    if (m < 10) out.print('0');
+    out.print(m);
+    out.print(':');
+    if (s < 10) out.print('0');
+    out.print(s);
+}
